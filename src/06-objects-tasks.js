@@ -19,13 +19,8 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(width, height) {
-  this.width = width;
-  this.height = height;
-
-  this.getArea = function getArea() {
-    return this.width * this.height;
-  };
+function Rectangle(/* width, height */) {
+  throw new Error('Not implemented');
 }
 
 /**
@@ -38,8 +33,8 @@ function Rectangle(width, height) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(obj) {
-  return JSON.stringify(obj);
+function getJSON(/* obj */) {
+  throw new Error('Not implemented');
 }
 
 /**
@@ -53,179 +48,91 @@ function getJSON(obj) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(proto, json) {
-  const obj = JSON.parse(json);
-  return Object.setPrototypeOf(obj, proto);
+function fromJSON(/* proto, json */) {
+  throw new Error('Not implemented');
 }
 
 /**
  * Css selectors builder
+ *
+ * Each complex selector can consists of type, id, class, attribute, pseudo-class
+ * and pseudo-element selectors:
+ *
+ *    element#id.class[attr]:pseudoClass::pseudoElement
+ *              \----/\----/\----------/
+ *              Can be several occurrences
+ *
+ * All types of selectors can be combined using the combination ' ','+','~','>' .
+ *
+ * The task is to design a single class, independent classes or classes hierarchy
+ * and implement the functionality to build the css selectors using the provided cssSelectorBuilder.
+ * Each selector should have the stringify() method to output the string representation
+ * according to css specification.
+ *
+ * Provided cssSelectorBuilder should be used as facade only to create your own classes,
+ * for example the first method of cssSelectorBuilder can be like this:
+ *   element: function(value) {
+ *       return new MySuperBaseElementSelector(...)...
+ *   },
+ *
+ * The design of class(es) is totally up to you, but try to make it as simple,
+ * clear and readable as possible.
+ *
+ * @example
+ *
+ *  const builder = cssSelectorBuilder;
+ *
+ *  builder.id('main').class('container').class('editable').stringify()
+ *    => '#main.container.editable'
+ *
+ *  builder.element('a').attr('href$=".png"').pseudoClass('focus').stringify()
+ *    => 'a[href$=".png"]:focus'
+ *
+ *  builder.combine(
+ *      builder.element('div').id('main').class('container').class('draggable'),
+ *      '+',
+ *      builder.combine(
+ *          builder.element('table').id('data'),
+ *          '~',
+ *           builder.combine(
+ *               builder.element('tr').pseudoClass('nth-of-type(even)'),
+ *               ' ',
+ *               builder.element('td').pseudoClass('nth-of-type(even)')
+ *           )
+ *      )
+ *  ).stringify()
+ *    => 'div#main.container.draggable + table#data ~ tr:nth-of-type(even)   td:nth-of-type(even)'
+ *
+ *  For more examples see unit tests.
  */
+
 const cssSelectorBuilder = {
-  selector: {
-    element: '',
-    id: '',
-    classes: [],
-    attributes: [],
-    pseudoClasses: [],
-    pseudoElement: '',
-    combinator: null,
-    nextSelector: null,
+  element(/* value */) {
+    throw new Error('Not implemented');
   },
 
-  element(value) {
-    if (this.selector.element) {
-      throw new Error(
-        'Element, id and pseudo-element should not occur more then one time inside the selector',
-      );
-    }
-    if (
-      this.selector.id
-      || this.selector.classes.length > 0
-      || this.selector.attributes.length > 0
-      || this.selector.pseudoClasses.length > 0
-      || this.selector.pseudoElement
-    ) {
-      throw new Error(
-        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
-      );
-    }
-
-    const newBuilder = Object.create(cssSelectorBuilder);
-    newBuilder.selector = { ...this.selector, element: value };
-    return newBuilder;
+  id(/* value */) {
+    throw new Error('Not implemented');
   },
 
-  id(value) {
-    if (this.selector.id) {
-      throw new Error(
-        'Element, id and pseudo-element should not occur more then one time inside the selector',
-      );
-    }
-    if (
-      this.selector.classes.length > 0
-      || this.selector.attributes.length > 0
-      || this.selector.pseudoClasses.length > 0
-      || this.selector.pseudoElement
-    ) {
-      throw new Error(
-        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
-      );
-    }
-
-    const newBuilder = Object.create(cssSelectorBuilder);
-    newBuilder.selector = { ...this.selector, id: value };
-    return newBuilder;
+  class(/* value */) {
+    throw new Error('Not implemented');
   },
 
-  class(value) {
-    if (
-      this.selector.attributes.length > 0
-      || this.selector.pseudoClasses.length > 0
-      || this.selector.pseudoElement
-    ) {
-      throw new Error(
-        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
-      );
-    }
-
-    const newBuilder = Object.create(cssSelectorBuilder);
-    newBuilder.selector = {
-      ...this.selector,
-      classes: [...this.selector.classes, value],
-    };
-    return newBuilder;
+  attr(/* value */) {
+    throw new Error('Not implemented');
   },
 
-  attr(value) {
-    if (
-      this.selector.pseudoClasses.length > 0
-      || this.selector.pseudoElement
-    ) {
-      throw new Error(
-        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
-      );
-    }
-
-    const newBuilder = Object.create(cssSelectorBuilder);
-    newBuilder.selector = {
-      ...this.selector,
-      attributes: [...this.selector.attributes, value],
-    };
-    return newBuilder;
+  pseudoClass(/* value */) {
+    throw new Error('Not implemented');
   },
 
-  pseudoClass(value) {
-    if (this.selector.pseudoElement) {
-      throw new Error(
-        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element',
-      );
-    }
-
-    const newBuilder = Object.create(cssSelectorBuilder);
-    newBuilder.selector = {
-      ...this.selector,
-      pseudoClasses: [...this.selector.pseudoClasses, value],
-    };
-    return newBuilder;
+  pseudoElement(/* value */) {
+    throw new Error('Not implemented');
   },
 
-  pseudoElement(value) {
-    if (this.selector.pseudoElement) {
-      throw new Error(
-        'Element, id and pseudo-element should not occur more then one time inside the selector',
-      );
-    }
-
-    const newBuilder = Object.create(cssSelectorBuilder);
-    newBuilder.selector = { ...this.selector, pseudoElement: value };
-    return newBuilder;
-  },
-
-  combine(selector1, combinator, selector2) {
-    const newBuilder = Object.create(cssSelectorBuilder);
-    newBuilder.selector = {
-      ...selector1.selector,
-      combinator,
-      nextSelector: selector2,
-    };
-    return newBuilder;
-  },
-
-  stringify() {
-    let result = '';
-
-    // Build the main selector
-    if (this.selector.element) {
-      result += this.selector.element;
-    }
-
-    if (this.selector.id) {
-      result += `#${this.selector.id}`;
-    }
-
-    if (this.selector.classes.length > 0) {
-      result += this.selector.classes.map((cls) => `.${cls}`).join('');
-    }
-
-    if (this.selector.attributes.length > 0) {
-      result += this.selector.attributes.map((attr) => `[${attr}]`).join('');
-    }
-
-    if (this.selector.pseudoClasses.length > 0) {
-      result += this.selector.pseudoClasses.map((pc) => `:${pc}`).join('');
-    }
-
-    if (this.selector.pseudoElement) {
-      result += `::${this.selector.pseudoElement}`;
-    }
-
-    // Handle combination
-    if (this.selector.combinator && this.selector.nextSelector) {
-      result += ` ${this.selector.combinator} ${this.selector.nextSelector.stringify()}`;
-    }
-
-    return result;
+  combine(/* selector1, combinator, selector2 */) {
+    throw new Error('Not implemented');
   },
 };
 

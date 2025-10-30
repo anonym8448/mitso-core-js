@@ -64,7 +64,7 @@ function getStringFromTemplate(firstName, lastName) {
  *   'Hello, Chuck Norris!' => 'Chuck Norris'
  */
 function extractNameFromTemplate(value) {
-  return value.slice(7, -1);
+  return value.replace(/^Hello,\s*(.*)!$/, '$1');
 }
 
 /**
@@ -78,7 +78,7 @@ function extractNameFromTemplate(value) {
  *   'cat'       => 'c'
  */
 function getFirstChar(value) {
-  return value[0];
+  return value.charAt(0);
 }
 
 /**
@@ -139,7 +139,7 @@ function removeFirstOccurrences(str, value) {
  *   '<a>' => 'a'
  */
 function unbracketTag(str) {
-  return str.slice(1, -1);
+  return str.replace(/^<|>$/g, '');
 }
 
 /**
@@ -199,17 +199,18 @@ function extractEmails(str) {
  *
  */
 function getRectangleString(width, height) {
-  const topLine = `┌${'─'.repeat(width - 2)}┐\n`;
-  const middleLine = `│${' '.repeat(width - 2)}│\n`;
-  const bottomLine = `└${'─'.repeat(width - 2)}┘\n`;
+  const topLeft = '\u250C';
+  const topRight = '\u2510';
+  const bottomLeft = '\u2514';
+  const bottomRight = '\u2518';
+  const horizontal = '\u2500';
+  const vertical = '\u2502';
 
-  let result = topLine;
-  for (let i = 0; i < height - 2; i += 1) {
-    result += middleLine;
-  }
-  result += bottomLine;
+  const top = `${topLeft}${horizontal.repeat(width - 2)}${topRight}\n`;
+  const middle = `${vertical}${' '.repeat(width - 2)}${vertical}\n`.repeat(height - 2);
+  const bottom = `${bottomLeft}${horizontal.repeat(width - 2)}${bottomRight}\n`;
 
-  return result;
+  return top + middle + bottom;
 }
 
 /**
@@ -229,9 +230,10 @@ function getRectangleString(width, height) {
  *
  */
 function encodeToRot13(str) {
-  return str.replace(/[a-zA-Z]/g, (char) => {
-    const start = char <= 'Z' ? 65 : 97;
-    return String.fromCharCode(start + ((char.charCodeAt(0) - start + 13) % 26));
+  return (str || '').replace(/[A-Za-z]/g, (ch) => {
+    const code = ch.charCodeAt(0);
+    const base = code >= 97 ? 97 : 65;
+    return String.fromCharCode(((code - base + 13) % 26) + base);
   });
 }
 
@@ -277,13 +279,18 @@ function isString(value) {
  *   'K♠' => 51
  */
 function getCardId(value) {
-  const deck = [
-    'A♣', '2♣', '3♣', '4♣', '5♣', '6♣', '7♣', '8♣', '9♣', '10♣', 'J♣', 'Q♣', 'K♣',
-    'A♦', '2♦', '3♦', '4♦', '5♦', '6♦', '7♦', '8♦', '9♦', '10♦', 'J♦', 'Q♦', 'K♦',
-    'A♥', '2♥', '3♥', '4♥', '5♥', '6♥', '7♥', '8♥', '9♥', '10♥', 'J♥', 'Q♥', 'K♥',
-    'A♠', '2♠', '3♠', '4♠', '5♠', '6♠', '7♠', '8♠', '9♠', '10♠', 'J♠', 'Q♠', 'K♠',
-  ];
-  return deck.indexOf(value);
+  const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  const suits = {
+    '♣': 0,
+    '♦': 1,
+    '♥': 2,
+    '♠': 3,
+  };
+
+  const suit = value.slice(-1);
+  const rank = value.slice(0, -1);
+
+  return suits[suit] * 13 + ranks.indexOf(rank);
 }
 
 module.exports = {
